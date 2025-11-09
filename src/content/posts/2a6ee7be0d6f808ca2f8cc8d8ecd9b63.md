@@ -1,7 +1,7 @@
 ---
-title: "Notion"
+title: "Notion静态bo'ke"
 draft: true
 ---
 
-# Notion
+# Notion静态bo'ke
 
