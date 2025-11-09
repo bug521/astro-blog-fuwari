@@ -1,7 +1,7 @@
 ---
-title: "Notion静态bo'ke"
+title: "Notion静态博客同步工具"
 draft: true
 ---
 
-# Notion静态bo'ke
+# Notion静态博客同步工具
 
