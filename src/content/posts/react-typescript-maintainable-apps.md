@@ -5,8 +5,8 @@ tags: ["技术", "教程", "项目"]
 description: "本文详细介绍了如何结合React和TypeScript的类型系统，构建具有良好可维护性和扩展性的前端应用程序，包含实际项目中的最佳实践和常见陷阱。"
 author: "John Doe"
 category: "编程技术"
-cover: "../../assets/64ea7ae60b4ee9e2.jpg"
 slug: "react-typescript-maintainable-apps"
+draft: true
 ---
 
 # 如何使用React和TypeScript构建可维护的前端应用
@@ -15,7 +15,7 @@ Cloudflare 的「自动程序攻击模式」并不是由普通的 Firewall Rule 
 
 因此你在 WAF 里写「UA = NotionAutomation → 跳过」对它无效，规则执行顺序里它晚于 Bot Management，所以请求仍会被质询（JS Challenge）→ Notion 拿不到 200，只能报 403 。
 
-![](../../assets/620b8940c6d68b06.png)
+![](../../assets/da519a726edee6ed.png)
 
 下面给出免费版用户能用的 2 种「放行」办法，按顺序操作即可：
 
