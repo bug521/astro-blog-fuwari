@@ -2,7 +2,7 @@
 title: "Notion静态博客同步工具"
 published: 2025-11-09
 tags: ["技术", "项目", "工具"]
-description: "一个自动化的notion同步gong'j"
+description: "一个自动化的notion同步工具，将"
 slug: "notion-sync-blog-design"
 ---
 
