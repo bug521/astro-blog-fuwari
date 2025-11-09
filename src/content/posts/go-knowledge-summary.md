@@ -1,6 +1,7 @@
 ---
 title: "Go知识总结"
+published: 2025-11-10
+tags: ["技术", "教程"]
 slug: "go-knowledge-summary"
-draft: true
 ---
 
