@@ -7,7 +7,6 @@ category: "编程技术"
 slug: "notion-sync-blog-design"
 ---
 
-
 ## 项目背景
 
 在现代内容创作流程中，Notion已成为许多团队和个人的首选工具。它提供了强大的数据库管理、协作编辑和灵活的结构化数据能力。然而，对于使用静态站点生成器（如Astro、Hugo、Gatsby）的博客来说，如何高效地将Notion中的内容同步到静态站点一直是一个挑战。
@@ -121,9 +120,9 @@ slug: "notion-sync-blog-design"
 设计决策:
 
 - 为什么不使用官方SDK？
-- 减少依赖
-- 更好的错误控制
-- 精确控制API行为
+  - 减少依赖
+  - 更好的错误控制
+  - 精确控制API行为
 ### 3. Converter (internal/converter/)
 
 职责: 将Notion数据转换为Markdown
