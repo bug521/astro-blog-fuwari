@@ -50,13 +50,13 @@ slug: "chat-more-design-doc"
 
 ### 架构分层
 
-|  |  |
+| 层级 | 职责 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
+| 前端 | 用户界面、模型选择、SSE流接收、消息渲染、历史与统计展示 |
+| API层 | 认证、模型管理、会话管理、SSE聚合与分发 |
+| 服务层 | 并行调度、多模型调用、数据整合与入库 |
+| 持久层 | MySQL（sqlx操作）、Redis（可选缓存） |
+| 外部服务 | 各企业模型API（OpenAI兼容） |
 
 ## ⚙️ 三、技术栈
 
@@ -100,70 +100,70 @@ slug: "chat-more-design-doc"
 
 ### users
 
-|  |  |  |
+| 字段 | 类型 | 描述 |
 | --- | --- | --- |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| id | bigint | 主键 |
+| email | varchar | 唯一邮箱 |
+| display_name | varchar | 显示名 |
+| password_hash | varchar | bcrypt哈希 |
+| role | enum(admin/user) | 角色 |
+| failed_attempts | int | 登录失败次数 |
+| locked_until | datetime | 锁定截止 |
+| is_active | bool | 是否启用 |
+| last_login_at | datetime | 最近登录 |
+| created_at / updated_at | datetime | 时间戳 |
 
 ### refresh_tokens
 
-|  |  |
+| 字段 | 描述 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
+| id (jti) | JWT ID |
+| user_id | 用户ID |
+| issued_at / expires_at | 时间 |
+| revoked_at | 失效时间 |
+| user_agent / ip | 设备信息 |
 
 ### models
 
-|  |  |
+| 字段 | 描述 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
+| id | 主键 |
+| name | 模型名 |
+| provider_name | 提供商 |
+| base_url | API地址 |
+| api_key_enc | 加密密钥 |
+| default_params | JSON参数(temperature/top_p/max_tokens/timeout_ms) |
+| enabled | 是否启用 |
+| notes | 备注 |
+| created_at / updated_at | 时间戳 |
 
 ### conversations
 
-|  |  |
+| 字段 | 描述 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
+| id | 会话ID |
+| title | 标题 |
+| user_id | 所属用户 |
+| tags | JSON数组 |
+| metadata | JSON |
+| archived_at | 归档时间 |
+| last_message_at | 最后消息时间 |
+| created_at / updated_at | 时间戳 |
 
 ### messages
 
-|  |  |
+| 字段 | 描述 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
+| id | 消息ID |
+| conversation_id | 会话 |
+| turn_id | 对话轮次 |
+| role | user/system/assistant |
+| model_ref | 对应模型 |
+| content | JSON(OpenAI格式) |
+| tokens_prompt / tokens_completion | token统计 |
+| latency_ms | 延迟 |
+| error | JSON |
+| created_at | 时间戳 |
 
 ### turns & turn_results
 
@@ -199,13 +199,13 @@ slug: "chat-more-design-doc"
 
 ### JWT Claims
 
-|  |  |
+| 字段 | 含义 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
-|  |  |
+| sub | 用户ID |
+| email | 用户邮箱 |
+| role | 角色 |
+| iat / exp | 签发与过期时间 |
+| jti | 唯一标识 |
 
 ## 🔄 六、核心业务流程
 
@@ -254,26 +254,26 @@ slug: "chat-more-design-doc"
 
 ## 💬 七、接口概览
 
-|  |  |  |  |
+| 模块 | 方法 | 路径 | 说明 |
 | --- | --- | --- | --- |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
+| Auth | POST | /auth/register | 用户注册（可配置开关） |
+| Auth | POST | /auth/login | 登录 |
+| Auth | POST | /auth/refresh | 刷新令牌 |
+| Auth | POST | /auth/logout | 登出（当前设备） |
+| Auth | GET | /auth/me | 当前用户信息 |
+| Auth | POST | /auth/change-password | 修改密码 |
+| Model | GET | /api/models | 模型列表 |
+| Model | POST | /api/models | 新增模型 |
+| Model | PATCH | /api/models/:id | 更新模型 |
+| Model | POST | /api/models/:id/test | 测试连通性 |
+| Conv | POST | /api/conversations | 创建会话 |
+| Conv | GET | /api/conversations | 查询会话 |
+| Conv | GET | /api/conversations/:id | 会话详情 |
+| Msg | POST | /api/conversations/:id/messages | 发送消息并触发对话 |
+| Msg | GET | /api/conversations/:id/messages | 历史消息 |
+| Stream | POST | /streams/ticket | 获取SSE票据 |
+| Stream | GET | /streams/turn/:id | 建立SSE流 |
+| Stats | GET | /api/stats/usage | 模型统计 |
 
 ## 🔀 八、SSE 流事件格式
 
@@ -319,18 +319,18 @@ slug: "chat-more-design-doc"
 
 ## 🔒 十、安全与配置
 
-|  |  |  |
+| 配置项 | 示例值 | 说明 |
 | --- | --- | --- |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| JWT_ALG | RS256 | JWT算法 |
+| JWT_ACCESS_TTL | 15m | Access有效期 |
+| JWT_REFRESH_TTL | 336h | Refresh有效期 |
+| JWT_STREAM_TTL | 60s | SSE票据有效期 |
+| AUTH_ALLOW_SELF_REGISTER | false | 是否允许注册 |
+| MYSQL_DSN | user:pass@tcp(mysql:3306)/chat?parseTime=true | 数据源 |
+| CORS_ALLOWED_ORIGINS | https://app.localhost | 允许跨域 |
+| COOKIE_SECURE | true | 仅HTTPS |
+| COOKIE_SAMESITE | Lax | 防CSRF |
+| BCRYPT_COST | 12 | 加密成本 |
 
 ## 🧭 十一、前端架构
 
@@ -423,26 +423,26 @@ services:
 
 ## 📊 十四、错误码表
 
-|  |  |  |
+| 分类 | 代码 | 含义 |
 | --- | --- | --- |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
-|  |  |  |
+| Auth | AUTH_INVALID_CREDENTIALS | 用户名或密码错误 |
+| Auth | AUTH_ACCOUNT_LOCKED | 账号暂时锁定 |
+| Auth | AUTH_TOKEN_EXPIRED | 访问令牌过期 |
+| Auth | AUTH_TOKEN_REVOKED | 刷新令牌失效 |
+| Auth | AUTH_REGISTER_DISABLED | 注册被关闭 |
+| Model | MODEL_NOT_FOUND | 模型不存在 |
+| Model | PROVIDER_TIMEOUT | 调用超时 |
+| Conversation | CONVERSATION_NOT_FOUND | 会话不存在 |
+| Common | VALIDATION_FAILED | 参数错误 |
+| Common | INTERNAL_ERROR | 服务内部错误 |
 
 ## 🧩 十五、迭代路线图
 
-|  |  |
+| 阶段 | 功能 |
 | --- | --- |
-|  |  |
-|  |  |
-|  |  |
+| MVP | 登录、会话、多模型并行对话、SSE 流、持久化 |
+| 第二阶段 | 模型管理界面、统计报表、限流与熔断 |
+| 第三阶段 | RAG 支持、文件上传、权限与审计（未来） |
 
 ## ✅ 十六、总结
 
